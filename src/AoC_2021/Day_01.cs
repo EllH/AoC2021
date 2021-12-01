@@ -1,20 +1,35 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using AoCHelper;
 
-namespace AdventOfCode
+namespace AoC_2021
 {
-    public class Day_01 : BaseDay
+    public class Day01 : BaseDay
     {
-        private readonly string _input;
+        private readonly string input;
 
-        public Day_01()
+        private List<int> inputAsInts;
+
+        public Day01()
         {
-            _input = File.ReadAllText(InputFilePath);
+            input = File.ReadAllText(InputFilePath);
+            inputAsInts = Array.ConvertAll(input.Split("\n"), int.Parse).ToList();
+
         }
 
-        public override ValueTask<string> Solve_1() => new($"Solution to {ClassPrefix} {CalculateIndex()}, part 1");
+        public override ValueTask<string> Solve_1()
+        {
+            return new ValueTask<string>(inputAsInts.Skip(1).Zip(inputAsInts, (curr, prev) => curr > prev)
+                .Count(c => c).ToString());
+        }
 
-        public override ValueTask<string> Solve_2() => new($"Solution to {ClassPrefix} {CalculateIndex()}, part 2");
+        public override ValueTask<string> Solve_2()
+        {
+            return new ValueTask<string>(inputAsInts.Skip(3).Zip(inputAsInts, (curr, prev) => curr > prev)
+                .Count(c => c).ToString());
+        }
     }
 }
