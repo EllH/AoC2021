@@ -11,13 +11,12 @@ namespace AoC_2021
     {
         private readonly string input;
 
-        private List<int> inputAsInts;
+        private readonly List<int> inputAsInts;
 
         public Day01()
         {
             input = File.ReadAllText(InputFilePath);
             inputAsInts = Array.ConvertAll(input.Split("\n"), int.Parse).ToList();
-
         }
 
         public override ValueTask<string> Solve_1()
