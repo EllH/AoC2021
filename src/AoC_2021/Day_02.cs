@@ -10,12 +10,12 @@ public class Day02 : BaseDay
 
     public Day02()
     {
-        input = File.ReadAllText(InputFilePath);
+        this.input = File.ReadAllText(InputFilePath);
     }
 
     public override ValueTask<string> Solve_1()
     {
-        return new ValueTask<string>(Parse(input).Aggregate(new State(0, 0, 0), (state, parsedInput) =>
+        return new ValueTask<string>(ParsedInput().Aggregate(new State(0, 0, 0), (state, parsedInput) =>
             parsedInput.direction switch
             {
                 "forward" => state with
@@ -36,7 +36,7 @@ public class Day02 : BaseDay
 
     public override ValueTask<string> Solve_2()
     {
-        return new ValueTask<string>(Parse(input).Aggregate(new State(0, 0, 0), (state, parsedInput) =>
+        return new ValueTask<string>(ParsedInput().Aggregate(new State(0, 0, 0), (state, parsedInput) =>
             parsedInput.direction switch
             {
                 "forward" => state with
@@ -56,9 +56,9 @@ public class Day02 : BaseDay
             }, state => state.horizontal * state.depth).ToString());
     }
 
-    IEnumerable<Input> Parse(string input) =>
+    IEnumerable<Input> ParsedInput() =>
         from
-            line in input.Split('\n')
+            line in this.input.Split('\n')
         let parts = line.Split()
         select
             new Input(parts[0], int.Parse(parts[1]));

@@ -13,19 +13,19 @@ public class Day01 : BaseDay
 
     public Day01()
     {
-        input = File.ReadAllText(InputFilePath);
-        inputAsInts = Array.ConvertAll(input.Split("\n"), int.Parse).ToList();
+        this.input = File.ReadAllText(InputFilePath);
+        this.inputAsInts = Array.ConvertAll(this.input.Split("\n"), int.Parse).ToList();
     }
 
     public override ValueTask<string> Solve_1()
     {
-        return new ValueTask<string>(inputAsInts.Skip(1).Zip(inputAsInts, (curr, prev) => curr > prev)
+        return new ValueTask<string>(this.inputAsInts.Skip(1).Zip(this.inputAsInts, (curr, prev) => curr > prev)
             .Count(c => c).ToString());
     }
 
     public override ValueTask<string> Solve_2()
     {
-        return new ValueTask<string>(inputAsInts.Skip(3).Zip(inputAsInts, (curr, prev) => curr > prev)
+        return new ValueTask<string>(this.inputAsInts.Skip(3).Zip(this.inputAsInts, (curr, prev) => curr > prev)
             .Count(c => c).ToString());
     }
 }
