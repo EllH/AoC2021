@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using AoCHelper;
+﻿using System.Linq;
 
 public class Day01 : BaseDay
 {
@@ -19,13 +14,13 @@ public class Day01 : BaseDay
 
     public override ValueTask<string> Solve_1()
     {
-        return new ValueTask<string>(this.inputAsInts.Skip(1).Zip(this.inputAsInts, (curr, prev) => curr > prev)
+        return new (this.inputAsInts.Skip(1).Zip(this.inputAsInts, (curr, prev) => curr > prev)
             .Count(c => c).ToString());
     }
 
     public override ValueTask<string> Solve_2()
     {
-        return new ValueTask<string>(this.inputAsInts.Skip(3).Zip(this.inputAsInts, (curr, prev) => curr > prev)
+        return new (this.inputAsInts.Skip(3).Zip(this.inputAsInts, (curr, prev) => curr > prev)
             .Count(c => c).ToString());
     }
 }

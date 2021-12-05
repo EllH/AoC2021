@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using AoCHelper;
+﻿using System.Linq;
+
 public class Day02 : BaseDay
 {
     private readonly string input;
@@ -15,7 +11,7 @@ public class Day02 : BaseDay
 
     public override ValueTask<string> Solve_1()
     {
-        return new ValueTask<string>(ParsedInput().Aggregate(new State(0, 0, 0), (state, parsedInput) =>
+        return new (ParsedInput().Aggregate(new State(0, 0, 0), (state, parsedInput) =>
             parsedInput.direction switch
             {
                 "forward" => state with
@@ -36,7 +32,7 @@ public class Day02 : BaseDay
 
     public override ValueTask<string> Solve_2()
     {
-        return new ValueTask<string>(ParsedInput().Aggregate(new State(0, 0, 0), (state, parsedInput) =>
+        return new (ParsedInput().Aggregate(new State(0, 0, 0), (state, parsedInput) =>
             parsedInput.direction switch
             {
                 "forward" => state with
