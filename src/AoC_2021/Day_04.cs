@@ -1,129 +1,104 @@
 ﻿using System.Linq;
 
+public record struct ParsedData(IEnumerable<int> draw, IEnumerable<BingoBoard> boards);
+
+public record BingoBoard(int Id, string[][] Board)
+{
+    public bool IsWinner(IEnumerable<int> drawnNumbers)
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            var colMatches = 0;
+            var rowMatches = 0;
+            for (int j = 0; j < 5; j++)
+            {
+                rowMatches += drawnNumbers.Contains(int.Parse(Board[i][j])) ? 1 : 0;
+                colMatches += drawnNumbers.Contains(int.Parse(Board[j][i])) ? 1 : 0;
+            }
+
+            if (rowMatches == 5 || colMatches == 5)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+    
+    public int SumOfRemaining(IEnumerable<int> drawnNumbers)
+    {
+        return Board.Select(row => row.Where(s => !drawnNumbers.Contains(int.Parse(s))).Sum(value => int.Parse(value)))
+            .Sum();
+    }
+}
+
+
 public class Day04 : BaseDay
 {
-    private readonly string input;
+    private readonly string Input;
 
-    private readonly string[] numbers =
-        "50,68,2,1,69,32,87,10,31,21,78,23,62,98,16,99,65,35,27,96,66,26,74,72,45,52,81,60,38,57,54,19,18,77,71,29,51,41,22,6,58,5,42,92,85,64,94,12,83,11,17,14,37,36,59,33,0,93,34,70,97,7,76,20,3,88,43,47,8,79,80,63,9,25,56,75,15,4,82,67,39,30,89,86,46,90,48,73,91,55,95,28,49,61,44,84,40,53,13,24"
-            .Split(",");
+    private ParsedData ParsedInput;
 
     public Day04()
     {
-        this.input = File.ReadAllText(InputFilePath);
+        this.Input = File.ReadAllText(InputFilePath);
+        this.ParsedInput = ParseInput();
+    }
+
+    private ParsedData ParseInput()
+    {
+        var parts = this.Input.Split("\n", StringSplitOptions.RemoveEmptyEntries);
+        
+        var boards = parts.Skip(1).Select((s, i) => s.Split(" ", StringSplitOptions.RemoveEmptyEntries).ToArray()).Chunk(5)
+            .ToArray();
+
+        return new(
+                parts[0].Split(',').Select(int.Parse).ToArray(),
+                boards.Select((board, i) => new BingoBoard(i ,board))
+        );
     }
 
     public override ValueTask<string> Solve_1()
     {
-        var count = 0;
-        var marked = this.input.Replace("\r\n\r\n", "\r\n").Split("\r\n")
-            .Select(row => row.Replace("  ", " ").Split(" ")).ToArray();
-        bool rowMatchFound = false;
+        List<int> drawnNumbers = new ();
 
-        while (rowMatchFound == false)
+        foreach (int number in this.ParsedInput.draw)
         {
-            marked = marked.Select(row => row.Select(value => value == this.numbers[count] ? "✔" : value).ToArray())
-                .ToArray();
-            var markedBoard = marked.Chunk(5).ToArray();
-            rowMatchFound = marked.Where(board => board.Count(row => row == "✔") == 5).ToArray().Any();
-            foreach (var board in markedBoard)
+            drawnNumbers.Add(number);
+            foreach (var bingoBoard in this.ParsedInput.boards)
             {
-                for (int i = 0; i < 5; i++)
+                if (bingoBoard.IsWinner(drawnNumbers))
                 {
-                    var columnMatchFound = true;
-                    for (int j = 0; j < 5; j++)
-                    {
-                        if (board[j][i] != "✔")
-                        {
-                            columnMatchFound = false;
-                        }
-                    }
-
-                    if (columnMatchFound || rowMatchFound)
-                    {
-                        var sum = board.Select(row => row.Where(s => s != "✔")).Select(r => r.Sum(x => int.Parse(x))).Sum();
-                        
-                        return new((sum * int.Parse(numbers[count])).ToString());
-                    }
+                    return new((bingoBoard.SumOfRemaining(drawnNumbers) * number).ToString());
                 }
+
+                
             }
-
-            ++count;
         }
-
+        
         return new("Didn't Find Winner :C");
     }
 
     public override ValueTask<string> Solve_2()
     {
-        var count = 0;
-        var marked = this.input.Replace("\r\n\r\n", "\r\n").Split("\r\n")
-            .Select(row => row.Split(" ")).ToList();
-        int boardsCount = marked.Chunk(5).ToArray().Length;
-        int completeBoards = 0;
-
-        while (completeBoards < boardsCount)
+        
+        List<int> drawnNumbers = new ();
+        List<int> winners = new();
+        foreach (int number in this.ParsedInput.draw)
         {
-            marked = marked.Select(row => row.Select(value => value == this.numbers[count] ? "✔" : value).ToArray())
-                .ToList();
-
-            for (var q = 0; q <= marked.Count - 5; q += 5)
+            drawnNumbers.Add(number);
+            foreach (var bingoBoard in this.ParsedInput.boards)
             {
-                var columnMatchFound = true;
-                for (int i = 0; i < 5; i++)
-                {
-                    columnMatchFound = true;
-                    for (int j = q; j < q + 5; j++)
-                    {
-                        if (marked[j][i] != "✔")
-                        {
-                            columnMatchFound = false;
-                            break;
-                        }
-                    }
-
-                    if (columnMatchFound)
-                    {
-                        break;
-                    }
-                }
-
-                var rowMatchFound = true;
-                for (int i = q; i < q + 5; i++)
-                {
-                    rowMatchFound = true;
-                    for (int j = 0; j < 5; j++)
-                    {
-                        if (marked[i][j] != "✔")
-                        {
-                            rowMatchFound = false;
-                            break;
-                        }
-                    }
-
-                    if (rowMatchFound)
-                    {
-                        break;
-                    }
-                }
+                if (winners.Contains(bingoBoard.Id)) continue;
+                if (!bingoBoard.IsWinner(drawnNumbers)) continue;
                 
-
-                if (columnMatchFound || rowMatchFound)
+                winners.Add(bingoBoard.Id);
+        
+                if (winners.Count == this.ParsedInput.boards.Count())
                 {
-                    if (completeBoards == 99)
-                    {
-                        
-                        var sum = marked.Chunk(5).ToArray().First().Select(row => row.Where(s => s != "✔")).Select(r => r.Sum(x => int.Parse(x)))
-                            .Sum();
-                        return new((sum * int.Parse(numbers[count])).ToString());
-                    }
-
-                    marked.RemoveRange(q, 5);
-                    completeBoards = completeBoards + 1;
+                    return new((bingoBoard.SumOfRemaining(drawnNumbers) * number).ToString());
                 }
             }
-
-            count++;
         }
 
         return new("Didn't Find Winner :C");
