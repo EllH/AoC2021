@@ -13,6 +13,10 @@
 
   <PropertyGroup>
     <NoWarn>S101</NoWarn>
+    <ImplicitUsings>true</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>10</LangVersion>
+
   </PropertyGroup>
 
   <ItemGroup>

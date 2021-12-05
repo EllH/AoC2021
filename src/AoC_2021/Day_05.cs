@@ -1,9 +1,10 @@
 ﻿using System.Linq;
+using System.Text.RegularExpressions;
 
 public class Day05 : BaseDay
 {
     private readonly string Input;
-    private readonly IEnumerable<int>[][] ParsedInput;
+    private readonly IEnumerable<(int x1, int y1, int x2, int y2)> ParsedInput;
 
     public Day05()
     {
@@ -11,161 +12,39 @@ public class Day05 : BaseDay
         this.ParsedInput = ParsedInputToFormat();
     }
 
-    public IEnumerable<int>[][] ParsedInputToFormat()
+    public IEnumerable<(int x1, int y1, int x2, int y2)> ParsedInputToFormat()
     {
-        return this.Input.Split("\n").Select(row => row.Split(" -> ").Select(n => n.Split(",").Select(n => int.Parse(n))).ToArray()).ToArray();
+        return this.Input.Split("\n")
+            .Select(l => Regex.Match(l, @"(\d+),(\d+) -> (\d+),(\d+)"))
+            .Select(m => (
+                x1: int.Parse(m.Groups[1].Value),
+                y1: int.Parse(m.Groups[2].Value),
+                x2: int.Parse(m.Groups[3].Value),
+                y2: int.Parse(m.Groups[4].Value)))
+            .ToList();
+    }
+
+    private int CountLineOverlaps(bool skipDiagonals = false) =>
+        this.ParsedInput.Where(x => !skipDiagonals || x.x1 == x.x2 || x.y1 == x.y2)
+            .SelectMany(x => GetPointsForLine(x.x1, x.y1, x.x2, x.y2)).GroupBy(x => x).Count(g => g.Count() > 1);
+    
+    private IEnumerable<(int x, int y)> GetPointsForLine(int x1, int y1, int x2, int y2)
+    {
+        var xDir = Math.Sign(x2 - x1);
+        var yDir = Math.Sign(y2 - y1);
+        for (int x = x1, y = y1; x != (x2 + xDir) || y != (y2 + yDir); x += xDir, y += yDir)
+        {
+            yield return (x, y);
+        }
     }
 
     public override ValueTask<string> Solve_1()
     {
-        int[,] grid = new int[1000, 1000];
-
-        foreach (var row in ParsedInput)
-        {
-            var start = row.First();
-            var end = row.Last();
-            var drawLineX = true;
-            var drawLineY = true;
-            if (start.First() != end.First()) drawLineX = false;
-            if (start.Last() != end.Last()) drawLineY = false;
-            if (!drawLineX && !drawLineY) continue;
-            
-            if (drawLineX)
-            {
-                var lineLength = Math.Abs(start.Last() - end.Last());
-                for (int i = 0; i <= lineLength; i++)
-                {
-                    if (end.Last() > start.Last())
-                    {
-                        grid[start.First(), start.Last() + i] += 1;
-                    }
-                    else
-                    {
-                        grid[start.First(), start.Last() - i] += 1;
-                    }
-
-                }
-            }
-
-            if (drawLineY)
-            {
-                var lineLength = Math.Abs(start.First() - end.First());
-                for (int i = 0; i <= lineLength; i++)
-                {
-                    if (end.First() > start.First())
-                    {
-                        grid[start.First() + i, start.Last()] += 1;
-                    }
-                    else
-                    {
-                        grid[start.First()-i, start.Last()] += 1;
-                    }
-                }
-            }
-        }
-
-        var count = 0;
-        for (int k = 0; k < grid.GetLength(0); k++)
-        {
-            for (int l = 0; l < grid.GetLength(1); l++)
-            {
-                if (grid[k, l] > 1) count++;
-            }
-        }
-        
-        return new(count.ToString());
+        return new(CountLineOverlaps(skipDiagonals: true).ToString());
     }
 
     public override ValueTask<string> Solve_2()
     {
-        int[,] grid = new int[1000, 1000];
-
-        foreach (var row in ParsedInput)
-        {
-            var start = row.First();
-            var end = row.Last();
-            var drawLineX = true;
-            var drawLineY = true;
-            if (start.First() != end.First()) drawLineX = false;
-            if (start.Last() != end.Last()) drawLineY = false;
-
-            if (drawLineX)
-            {
-                var lineLength = Math.Abs(start.Last() - end.Last());
-                for (int i = 0; i <= lineLength; i++)
-                {
-                    if (end.Last() > start.Last())
-                    {
-                        grid[start.First(), start.Last() + i] += 1;
-                    }
-                    else
-                    {
-                        grid[start.First(), start.Last() - i] += 1;
-                    }
-                }
-            }
-
-            if (drawLineY)
-            {
-                var lineLength = Math.Abs(start.First() - end.First());
-                for (int i = 0; i <= lineLength; i++)
-                {
-                    if (end.First() > start.First())
-                    {
-                        grid[start.First() + i, start.Last()] += 1;
-                    }
-                    else
-                    {
-                        grid[start.First()-i, start.Last()] += 1;
-                    }
-                    
-                    
-                }
-            }
-
-            if (!drawLineX && !drawLineY)
-            {
-                var lineLength1 = Math.Abs(start.First() - end.First());
-                var lineLength2 = Math.Abs(start.Last() - end.Last());
-                if (lineLength1 == lineLength2)
-                {
-                    for (int i = 0; i <= lineLength1; i++)
-                    {
-                        var x = 0;
-                        var y = 0;
-                        if (start.First() > end.First())
-                        {
-                            x = start.First() - i;
-                        }
-                        else
-                        {
-                            x = start.First() + i;
-                        }
-
-                        if (start.Last() > end.Last()) 
-                        {
-                            y = start.Last() - i;
-                        }
-                        else
-                        {
-                            y = start.Last() + i;
-                        }
-                        
-                        grid[x, y] += 1;
-                    }
-                }
-            }
-        }
-
-        var count = 0;
-        for (int k = 0; k < grid.GetLength(0); k++)
-        {
-            for (int l = 0; l < grid.GetLength(1); l++)
-            {
-                if (grid[k, l] > 1) count++;
-            }
-        }
-        
-        return new(count.ToString());
+        return new(CountLineOverlaps().ToString());
     }
 }
